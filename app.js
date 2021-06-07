@@ -1,4 +1,3 @@
-import {accounts} from './utils/data.js'
+import {account} from './utils/data.js'
 
 
-console.log(accounts)
