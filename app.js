@@ -12,9 +12,16 @@ const btnLogin = document.querySelector('.login__btn');
 const labelWelcome = document.querySelector('.welcome');
 const containerApp = document.querySelector('.app');
 
-const btnTransfer = document.querySelector('.form__btn--transfer')
-const inputTransferTo = document.querySelector('.form__input--to')
-const inputTransferAmount = document.querySelector('.form__input--amount')
+const btnTransfer = document.querySelector('.form__btn--transfer');
+const inputTransferTo = document.querySelector('.form__input--to');
+const inputTransferAmount = document.querySelector('.form__input--amount');
+
+const btnClose = document.querySelector('.form__btn--close');
+const inputCloseUsername = document.querySelector('.form__input--user');
+const inputClosePin = document.querySelector('.form__input--pin');
+
+const btnLoan = document.querySelector('.form__btn--loan');
+const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 
 const [account1, account2, account3] = accounts;
 
@@ -83,14 +90,16 @@ function authenticateUser(username, pinNum) {
   );
 
   if (currentAccount?.pin === Number(pinNum.trim())) {
-    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`
-    containerApp.style.opacity = 1
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+    containerApp.style.opacity = 1;
 
     // clear input fields
-    inputLoginUsername.value = inputLoginPin.value = ''
-    inputLoginPin.blur()
-    
-    updateUI(currentAccount)
+    inputLoginUsername.value = inputLoginPin.value = '';
+    inputLoginPin.blur();
+
+    updateUI(currentAccount);
   }
 }
 
@@ -109,19 +118,55 @@ function createUsername(accounts) {
 // transfer functionality --------------------
 
 function transferMoney(amount, username) {
-  inputTransferTo.value = inputTransferAmount.value = ''
+  inputTransferTo.value = inputTransferAmount.value = '';
 
-  const recieverAcc = accounts.find((acc) => acc.username === username)
+  const recieverAcc = accounts.find((acc) => acc.username === username);
 
-  if (amount > 0 && recieverAcc && currentAccount.balance >= amount && recieverAcc?.username !== currentAccount.username) {
-    currentAccount.movements.push(-amount)
-    recieverAcc.movements.push(amount)
+  if (
+    amount > 0 &&
+    recieverAcc &&
+    currentAccount.balance >= amount &&
+    recieverAcc?.username !== currentAccount.username
+  ) {
+    currentAccount.movements.push(-amount);
+    recieverAcc.movements.push(amount);
+    updateUI(currentAccount);
+  }
+}
+
+// request loan functionality ------------------
+
+function requestLoan(amount) {
+  inputLoanAmount.value = ''
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((movement) => movement >= amount * 0.1)
+  ) {
+    currentAccount.movements.push(amount)
     updateUI(currentAccount)
   }
 }
 
-createUsername(accounts);
+// close account functionality ------------------
 
+function closeAccount(username, pinNum) {
+  inputCloseUsername.value = inputClosePin.value = '';
+
+  if (username === currentAccount.username && pinNum === currentAccount.pin) {
+    const index = accounts.findIndex(
+      (account) => account.username === currentAccount.username
+    );
+
+    accounts.splice(index, 1);
+    containerApp.style.opacity = 0;
+    console.log(accounts);
+  }
+}
+
+// invoke function and set eventListener ----------
+
+// create username instead of using owner name
+createUsername(accounts);
 
 btnLogin.addEventListener('click', (e) => {
   e.preventDefault();
@@ -129,8 +174,26 @@ btnLogin.addEventListener('click', (e) => {
 });
 
 btnTransfer.addEventListener('click', (e) => {
-  e.preventDefault()
-  transferMoney(Number(inputTransferAmount.value), inputTransferTo.value.toLowerCase())
-})
+  e.preventDefault();
+  transferMoney(
+    Number(inputTransferAmount.value),
+    inputTransferTo.value.toLowerCase()
+  );
+});
 
+btnLoan.addEventListener('click', (e) => {
+  e.preventDefault();
+  requestLoan(Number(inputLoanAmount.value));
+});
 
+btnClose.addEventListener('click', (e) => {
+  e.preventDefault();
+  closeAccount(
+    inputCloseUsername.value.toLowerCase(),
+    Number(inputClosePin.value)
+  );
+});
+
+const arr = [...[1, 2, 3], ...[5, 6, 8], 9]
+
+console.log(arr)
