@@ -6,22 +6,24 @@ const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
 
-
 const inputLoginUsername = document.querySelector('.login__input--user');
 const inputLoginPin = document.querySelector('.login__input--pin');
 const btnLogin = document.querySelector('.login__btn');
 const labelWelcome = document.querySelector('.welcome');
 const containerApp = document.querySelector('.app');
 
+const btnTransfer = document.querySelector('.form__btn--transfer')
+const inputTransferTo = document.querySelector('.form__input--to')
+const inputTransferAmount = document.querySelector('.form__input--amount')
 
 const [account1, account2, account3] = accounts;
 
 // movements functionality --------------
 
-function displayMovements(movements) {
+function displayMovements(account) {
   containerMovements.innerHTML = '';
 
-  movements.forEach((movement, index) => {
+  account.movements.forEach((movement, index) => {
     const type = movement > 0 ? 'deposit' : 'withdrawal';
 
     const html = `
@@ -37,11 +39,11 @@ function displayMovements(movements) {
   });
 }
 
-function displayBalance(movements) {
-  const balance = movements.reduce((value, movement) => {
+function displayBalance(account) {
+  account.balance = account.movements.reduce((value, movement) => {
     return value + movement;
   }, 0);
-  labelBalance.textContent = `${balance}€`;
+  labelBalance.textContent = `${account.balance}€`;
 }
 
 function calcDisplaySummary(account) {
@@ -64,12 +66,17 @@ function calcDisplaySummary(account) {
   labelSumInterest.textContent = `${interest}€`;
 }
 
+function updateUI(account) {
+  displayMovements(account);
+  displayBalance(account);
+  calcDisplaySummary(account);
+}
+
 // inputs functionality -----------------
 
 let currentAccount;
 
 function authenticateUser(username, pinNum) {
-  console.log(accounts);
   currentAccount = accounts.find(
     (account) =>
       account.username.toLowerCase() === username.toLowerCase().trim()
@@ -83,12 +90,7 @@ function authenticateUser(username, pinNum) {
     inputLoginUsername.value = inputLoginPin.value = ''
     inputLoginPin.blur()
     
-    displayMovements(currentAccount.movements);
-    displayBalance(currentAccount.movements);
-    calcDisplaySummary(currentAccount);
-
-  } else {
-    console.log(`username or pin is invalid`);
+    updateUI(currentAccount)
   }
 }
 
@@ -104,6 +106,20 @@ function createUsername(accounts) {
   });
 }
 
+// transfer functionality --------------------
+
+function transferMoney(amount, username) {
+  inputTransferTo.value = inputTransferAmount.value = ''
+
+  const recieverAcc = accounts.find((acc) => acc.username === username)
+
+  if (amount > 0 && recieverAcc && currentAccount.balance >= amount && recieverAcc?.username !== currentAccount.username) {
+    currentAccount.movements.push(-amount)
+    recieverAcc.movements.push(amount)
+    updateUI(currentAccount)
+  }
+}
+
 createUsername(accounts);
 
 
@@ -111,3 +127,10 @@ btnLogin.addEventListener('click', (e) => {
   e.preventDefault();
   authenticateUser(inputLoginUsername.value, inputLoginPin.value);
 });
+
+btnTransfer.addEventListener('click', (e) => {
+  e.preventDefault()
+  transferMoney(Number(inputTransferAmount.value), inputTransferTo.value.toLowerCase())
+})
+
+
