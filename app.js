@@ -1,18 +1,22 @@
 import { accounts } from './utils/data.js';
 
 const containerMovements = document.querySelector('.movements');
-const labelBalance = document.querySelector('.balance__value')
-const labelSumIn = document.querySelector('.summary__value--in')
-const labelSumOut = document.querySelector('.summary__value--out')
-const labelSumInterest = document.querySelector('.summary__value--interest')
+const labelBalance = document.querySelector('.balance__value');
+const labelSumIn = document.querySelector('.summary__value--in');
+const labelSumOut = document.querySelector('.summary__value--out');
+const labelSumInterest = document.querySelector('.summary__value--interest');
 
-const type = document.querySelector('.movements__type');
 
-const date = document.querySelector('.movements__date');
+const inputLoginUsername = document.querySelector('.login__input--user');
+const inputLoginPin = document.querySelector('.login__input--pin');
+const btnLogin = document.querySelector('.login__btn');
+const labelWelcome = document.querySelector('.welcome');
+const containerApp = document.querySelector('.app');
 
-const value = document.querySelector('.movements__value');
 
 const [account1, account2, account3] = accounts;
+
+// movements functionality --------------
 
 function displayMovements(movements) {
   containerMovements.innerHTML = '';
@@ -35,31 +39,58 @@ function displayMovements(movements) {
 
 function displayBalance(movements) {
   const balance = movements.reduce((value, movement) => {
-    return value + movement
-  }, 0)
-  labelBalance.textContent = `${balance}€`
+    return value + movement;
+  }, 0);
+  labelBalance.textContent = `${balance}€`;
 }
 
-function calcDisplaySummary(movements, interestRate) {
-  const incomes = movements
-  .filter((movement) => movement > 0)
-  .reduce((value, deposit) => value + deposit, 0)
+function calcDisplaySummary(account) {
+  const incomes = account.movements
+    .filter((movement) => movement > 0)
+    .reduce((value, deposit) => value + deposit, 0);
 
-  const out = movements
-  .filter((movement) => movement < 0)
-  .reduce((value, withdrawal) => value + withdrawal, 0)
+  const out = account.movements
+    .filter((movement) => movement < 0)
+    .reduce((value, withdrawal) => value + withdrawal, 0);
 
-  const interest = movements
-  .filter((movement) => movement > 0)
-  .map((deposit) => deposit * interestRate / 100)
-  .filter((int) => int >= 1) // only interest is greater than 1 is applied
-  .reduce((value, int) => value + int, 0)
-  
-  labelSumIn.textContent = `${incomes}€`
-  labelSumOut.textContent = `${Math.abs(out)}€`
-  labelSumInterest.textContent = `${interest}€`
+  const interest = account.movements
+    .filter((movement) => movement > 0)
+    .map((deposit) => (deposit * account.interestRate) / 100)
+    .filter((int) => int >= 1) // only interest is greater than 1 is applied
+    .reduce((value, int) => value + int, 0);
+
+  labelSumIn.textContent = `${incomes}€`;
+  labelSumOut.textContent = `${Math.abs(out)}€`;
+  labelSumInterest.textContent = `${interest}€`;
 }
 
+// inputs functionality -----------------
+
+let currentAccount;
+
+function authenticateUser(username, pinNum) {
+  console.log(accounts);
+  currentAccount = accounts.find(
+    (account) =>
+      account.username.toLowerCase() === username.toLowerCase().trim()
+  );
+
+  if (currentAccount?.pin === Number(pinNum.trim())) {
+    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`
+    containerApp.style.opacity = 1
+
+    // clear input fields
+    inputLoginUsername.value = inputLoginPin.value = ''
+    inputLoginPin.blur()
+    
+    displayMovements(currentAccount.movements);
+    displayBalance(currentAccount.movements);
+    calcDisplaySummary(currentAccount);
+
+  } else {
+    console.log(`username or pin is invalid`);
+  }
+}
 
 function createUsername(accounts) {
   accounts.forEach((account) => {
@@ -70,13 +101,13 @@ function createUsername(accounts) {
         return name[0];
       })
       .join('');
-  })
+  });
 }
 
-
-
-displayMovements(account1.movements);
-displayBalance(account1.movements)
-calcDisplaySummary(account1.movements, account1.interestRate)
-
 createUsername(accounts);
+
+
+btnLogin.addEventListener('click', (e) => {
+  e.preventDefault();
+  authenticateUser(inputLoginUsername.value, inputLoginPin.value);
+});
