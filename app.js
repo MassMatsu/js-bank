@@ -23,14 +23,20 @@ const inputClosePin = document.querySelector('.form__input--pin');
 const btnLoan = document.querySelector('.form__btn--loan');
 const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 
+const btnSort = document.querySelector('.btn--sort');
+
+
 const [account1, account2, account3] = accounts;
+let sort = false;
 
 // movements functionality --------------
 
-function displayMovements(account) {
+function displayMovements(account, sort = false) {
   containerMovements.innerHTML = '';
 
-  account.movements.forEach((movement, index) => {
+  const movements = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
+
+  movements.forEach((movement, index) => {
     const type = movement > 0 ? 'deposit' : 'withdrawal';
 
     const html = `
@@ -74,7 +80,7 @@ function calcDisplaySummary(account) {
 }
 
 function updateUI(account) {
-  displayMovements(account);
+  displayMovements(account, sort);
   displayBalance(account);
   calcDisplaySummary(account);
 }
@@ -163,6 +169,12 @@ function closeAccount(username, pinNum) {
   }
 }
 
+// sort functionality ------------------------
+
+btnSort.addEventListener('click', () => {
+  console.log('sort')
+})
+
 // invoke function and set eventListener ----------
 
 // create username instead of using owner name
@@ -170,6 +182,7 @@ createUsername(accounts);
 
 btnLogin.addEventListener('click', (e) => {
   e.preventDefault();
+  sort = false
   authenticateUser(inputLoginUsername.value, inputLoginPin.value);
 });
 
@@ -194,6 +207,8 @@ btnClose.addEventListener('click', (e) => {
   );
 });
 
-const arr = [...[1, 2, 3], ...[5, 6, 8], 9]
+btnSort.addEventListener('click', () => {
+  sort = !sort
+  displayMovements(currentAccount, sort)
+})
 
-console.log(arr)

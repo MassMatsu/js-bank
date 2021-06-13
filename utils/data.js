@@ -20,9 +20,4 @@ const account3 = {
   pin: 3333,
 };
 
-export const accounts = [account1, account2, account3]
-
-
-
-
-
+export const accounts = [account1, account2, account3];
