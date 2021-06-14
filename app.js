@@ -25,30 +25,46 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 
 const btnSort = document.querySelector('.btn--sort');
 
-const labelDate = document.querySelector('.date')
-
+const labelDate = document.querySelector('.date');
 
 const [account1, account2, account3] = accounts;
 let sort = false;
+
+// date format -------------------------
+
+function formatMovementDate(date, locale) {
+  const calcDaysPassed = (now, date) =>
+    Math.round(Math.abs(date - now) / (1000 * 60 * 60 * 24));
+
+  const passedDays = calcDaysPassed(new Date(), date);
+
+  if (passedDays === 0) return 'today';
+  if (passedDays === 1) return 'yesterday';
+  if (passedDays <= 7) return `${passedDays} days ago`;
+
+  // const day = `${date.getDate()}`.padStart(2, 0);
+  // const month = `${date.getMonth() + 1}`.padStart(2, 0);
+  // const year = date.getFullYear();
+
+  // return `${day}/${month}/${year}`;
+
+  return new Intl.DateTimeFormat(locale).format(date)
+}
 
 // movements functionality --------------
 
 function displayMovements(account, sort = false) {
   containerMovements.innerHTML = '';
 
-  const movements = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
+  const movements = sort
+    ? account.movements.slice().sort((a, b) => a - b)
+    : account.movements;
 
   movements.forEach((movement, index) => {
     const type = movement > 0 ? 'deposit' : 'withdrawal';
 
-    const date = new Date(account.movementsDates[index])
-
-    const day = `${date.getDate()}`.padStart(2, 0);
-    const month = `${date.getMonth() + 1}`.padStart(2, 0);
-    const year = date.getFullYear();
- 
-    const dateDisplay = `${day}/${month}/${year}`;
-    console.log(dateDisplay)
+    const date = new Date(account.movementsDates[index]);
+    const dateDisplay = formatMovementDate(date, account.locale);
 
     const html = `
      <div class="movements__row">
@@ -151,27 +167,25 @@ function transferMoney(amount, username) {
     // add date
     currentAccount.movementsDates.push(new Date().toISOString());
     recieverAcc.movementsDates.push(new Date().toISOString());
-    
+
     updateUI(currentAccount);
   }
-
-
 }
 
 // request loan functionality ------------------
 
 function requestLoan(amount) {
-  inputLoanAmount.value = ''
+  inputLoanAmount.value = '';
   if (
     amount > 0 &&
     currentAccount.movements.some((movement) => movement >= amount * 0.1)
   ) {
-    currentAccount.movements.push(amount)
+    currentAccount.movements.push(amount);
 
     // add date
     currentAccount.movementsDates.push(new Date().toISOString());
 
-    updateUI(currentAccount)
+    updateUI(currentAccount);
   }
 }
 
@@ -191,17 +205,12 @@ function closeAccount(username, pinNum) {
   }
 }
 
-// sort functionality ------------------------
-
-btnSort.addEventListener('click', () => {
-  console.log('sort')
-})
 
 // invoke function and set eventListener ----------
 
-currentAccount = account1
-updateUI(currentAccount)
-containerApp.style.opacity = 1
+currentAccount = account1;
+updateUI(currentAccount);
+containerApp.style.opacity = 1;
 
 
 // create username instead of using owner name
@@ -209,17 +218,30 @@ createUsername(accounts);
 
 btnLogin.addEventListener('click', (e) => {
   e.preventDefault();
-  sort = false
+  sort = false;
   authenticateUser(inputLoginUsername.value, inputLoginPin.value);
 
   const now = new Date();
-  const date = `${now.getDate()}`.padStart(2, 0);
-  const month = `${now.getMonth() + 1}`.padStart(2, 0);
-  const year = now.getFullYear();
-  const hour = `${now.getHours()}`.padStart(2, 0);
-  const min = `${now.getMinutes()}`.padStart(2, 0);
+  const options = {
+    hour: 'numeric',
+    minute: 'numeric',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    //weekday: 'long'
+  };
+  labelDate.textContent = new Intl.DateTimeFormat(
+    currentAccount.locale,
+    options
+  ).format(now);
 
-  labelDate.textContent = `${date}/${month}/${year}, ${hour}:${min}`;
+  // const date = `${now.getDate()}`.padStart(2, 0);
+  // const month = `${now.getMonth() + 1}`.padStart(2, 0);
+  // const year = now.getFullYear();
+  // const hour = `${now.getHours()}`.padStart(2, 0);
+  // const min = `${now.getMinutes()}`.padStart(2, 0);
+
+  // labelDate.textContent = `${date}/${month}/${year}, ${hour}:${min}`;
 });
 
 btnTransfer.addEventListener('click', (e) => {
@@ -244,7 +266,6 @@ btnClose.addEventListener('click', (e) => {
 });
 
 btnSort.addEventListener('click', () => {
-  sort = !sort
-  displayMovements(currentAccount, sort)
-})
-
+  sort = !sort;
+  displayMovements(currentAccount, sort);
+});
