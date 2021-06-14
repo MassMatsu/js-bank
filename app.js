@@ -25,6 +25,8 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 
 const btnSort = document.querySelector('.btn--sort');
 
+const labelDate = document.querySelector('.date')
+
 
 const [account1, account2, account3] = accounts;
 let sort = false;
@@ -39,13 +41,22 @@ function displayMovements(account, sort = false) {
   movements.forEach((movement, index) => {
     const type = movement > 0 ? 'deposit' : 'withdrawal';
 
+    const date = new Date(account.movementsDates[index])
+
+    const day = `${date.getDate()}`.padStart(2, 0);
+    const month = `${date.getMonth() + 1}`.padStart(2, 0);
+    const year = date.getFullYear();
+ 
+    const dateDisplay = `${day}/${month}/${year}`;
+    console.log(dateDisplay)
+
     const html = `
      <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       index + 1
     } deposit</div>
-        <div class="movements__date">3 days ago</div>
-        <div class="movements__value">${movement}€</div>
+        <div class="movements__date">${dateDisplay}</div>
+        <div class="movements__value">${movement.toFixed(2)}€</div>
       </div>
     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -56,7 +67,7 @@ function displayBalance(account) {
   account.balance = account.movements.reduce((value, movement) => {
     return value + movement;
   }, 0);
-  labelBalance.textContent = `${account.balance}€`;
+  labelBalance.textContent = `${account.balance.toFixed(2)}€`;
 }
 
 function calcDisplaySummary(account) {
@@ -74,9 +85,9 @@ function calcDisplaySummary(account) {
     .filter((int) => int >= 1) // only interest is greater than 1 is applied
     .reduce((value, int) => value + int, 0);
 
-  labelSumIn.textContent = `${incomes}€`;
-  labelSumOut.textContent = `${Math.abs(out)}€`;
-  labelSumInterest.textContent = `${interest}€`;
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
+  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 }
 
 function updateUI(account) {
@@ -136,8 +147,15 @@ function transferMoney(amount, username) {
   ) {
     currentAccount.movements.push(-amount);
     recieverAcc.movements.push(amount);
+
+    // add date
+    currentAccount.movementsDates.push(new Date().toISOString());
+    recieverAcc.movementsDates.push(new Date().toISOString());
+    
     updateUI(currentAccount);
   }
+
+
 }
 
 // request loan functionality ------------------
@@ -149,6 +167,10 @@ function requestLoan(amount) {
     currentAccount.movements.some((movement) => movement >= amount * 0.1)
   ) {
     currentAccount.movements.push(amount)
+
+    // add date
+    currentAccount.movementsDates.push(new Date().toISOString());
+
     updateUI(currentAccount)
   }
 }
@@ -177,6 +199,11 @@ btnSort.addEventListener('click', () => {
 
 // invoke function and set eventListener ----------
 
+currentAccount = account1
+updateUI(currentAccount)
+containerApp.style.opacity = 1
+
+
 // create username instead of using owner name
 createUsername(accounts);
 
@@ -184,6 +211,15 @@ btnLogin.addEventListener('click', (e) => {
   e.preventDefault();
   sort = false
   authenticateUser(inputLoginUsername.value, inputLoginPin.value);
+
+  const now = new Date();
+  const date = `${now.getDate()}`.padStart(2, 0);
+  const month = `${now.getMonth() + 1}`.padStart(2, 0);
+  const year = now.getFullYear();
+  const hour = `${now.getHours()}`.padStart(2, 0);
+  const min = `${now.getMinutes()}`.padStart(2, 0);
+
+  labelDate.textContent = `${date}/${month}/${year}, ${hour}:${min}`;
 });
 
 btnTransfer.addEventListener('click', (e) => {
@@ -196,7 +232,7 @@ btnTransfer.addEventListener('click', (e) => {
 
 btnLoan.addEventListener('click', (e) => {
   e.preventDefault();
-  requestLoan(Number(inputLoanAmount.value));
+  requestLoan(Math.floor(inputLoanAmount.value));
 });
 
 btnClose.addEventListener('click', (e) => {

@@ -40,7 +40,7 @@ const account2 = {
   locale: 'en-US',
 };
 
-const accounts = [account1, account2];
+export const accounts = [account1, account2];
 
 
 
