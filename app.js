@@ -51,6 +51,13 @@ function formatMovementDate(date, locale) {
   return new Intl.DateTimeFormat(locale).format(date)
 }
 
+function formatCurrency(value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+}
+
 // movements functionality --------------
 
 function displayMovements(account, sort = false) {
@@ -66,13 +73,15 @@ function displayMovements(account, sort = false) {
     const date = new Date(account.movementsDates[index]);
     const dateDisplay = formatMovementDate(date, account.locale);
 
+    const formattedMov = formatCurrency(movement, account.locale, account.currency)
+
     const html = `
      <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       index + 1
     } deposit</div>
         <div class="movements__date">${dateDisplay}</div>
-        <div class="movements__value">${movement.toFixed(2)}€</div>
+        <div class="movements__value">${formattedMov}</div>
       </div>
     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -83,7 +92,9 @@ function displayBalance(account) {
   account.balance = account.movements.reduce((value, movement) => {
     return value + movement;
   }, 0);
-  labelBalance.textContent = `${account.balance.toFixed(2)}€`;
+
+  labelBalance.textContent = formatCurrency(account.balance, account.locale, account.currency)
+;
 }
 
 function calcDisplaySummary(account) {
@@ -101,9 +112,9 @@ function calcDisplaySummary(account) {
     .filter((int) => int >= 1) // only interest is greater than 1 is applied
     .reduce((value, int) => value + int, 0);
 
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
-  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  labelSumIn.textContent = formatCurrency(incomes, account.locale, account.currency);
+  labelSumOut.textContent = formatCurrency(Math.abs(out), account.locale, account.currency);
+  labelSumInterest.textContent = formatCurrency(interest, account.locale, account.currency);
 }
 
 function updateUI(account) {
