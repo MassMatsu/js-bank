@@ -1,4 +1,5 @@
 import { accounts } from './utils/data.js';
+import { formatMovementDate, formatCurrency} from './utils/helper.js'
 
 const containerMovements = document.querySelector('.movements');
 const labelBalance = document.querySelector('.balance__value');
@@ -29,34 +30,12 @@ const labelDate = document.querySelector('.date');
 
 const labelTimer = document.querySelector('.timer');
 
-const btnLogout = document.querySelector('.logout__btn')
+const btnLogout = document.querySelector('.logout__btn');
 
-const [account1, account2, account3] = accounts;
+
+
+// display movements ------------------------------
 let sort = false;
-
-// date format -------------------------
-
-function formatMovementDate(date, locale) {
-  const calcDaysPassed = (now, date) =>
-    Math.round(Math.abs(date - now) / (1000 * 60 * 60 * 24));
-
-  const passedDays = calcDaysPassed(new Date(), date);
-
-  if (passedDays === 0) return 'today';
-  if (passedDays === 1) return 'yesterday';
-  if (passedDays <= 7) return `${passedDays} days ago`;
-
-  return new Intl.DateTimeFormat(locale).format(date);
-}
-
-function formatCurrency(value, locale, currency) {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currency,
-  }).format(value);
-}
-
-// movements functionality --------------
 
 function displayMovements(account, sort = false) {
   containerMovements.innerHTML = '';
@@ -66,7 +45,6 @@ function displayMovements(account, sort = false) {
     : account.movements;
 
   movements.forEach((movement, index) => {
-    console.log(movement.amount, movement.date)
     const type = movement.amount > 0 ? 'deposit' : 'withdrawal';
     const date = new Date(movement.date);
     const dateDisplay = formatMovementDate(date, account.locale);
@@ -90,6 +68,7 @@ function displayMovements(account, sort = false) {
   });
 }
 
+// display balance -------------------------------------
 function displayBalance(account) {
   account.balance = account.movements.reduce((value, movement) => {
     return value + movement.amount;
@@ -102,6 +81,7 @@ function displayBalance(account) {
   );
 }
 
+// display summary ---------------------------------------------
 function calcDisplaySummary(account) {
   const incomes = account.movements
     .filter((movement) => movement.amount > 0)
@@ -134,12 +114,14 @@ function calcDisplaySummary(account) {
   );
 }
 
+// update all above -------------------------------------------
 function updateUI(account) {
   displayMovements(account, sort);
   displayBalance(account);
   calcDisplaySummary(account);
 }
 
+// set logout timer -------------------------------------------
 function startLogoutTimer() {
   let time = 180;
 
@@ -153,7 +135,6 @@ function startLogoutTimer() {
       containerApp.style.opacity = 0;
       labelWelcome.textContent = 'Login to get started';
     }
-
     time -= 1;
   }
   tick();
@@ -161,13 +142,13 @@ function startLogoutTimer() {
   return timer;
 }
 
+// reset timer ----------------------------
 function resetTimer() {
   clearInterval(timer);
   timer = startLogoutTimer();
 }
 
-// login functionality -----------------
-
+// login functionality ------------------------------
 let currentAccount, timer;
 
 function authenticateUser(username, pinNum) {
@@ -192,7 +173,6 @@ function authenticateUser(username, pinNum) {
 }
 
 // create username using initial of account owner ---------
-
 function createUsername(accounts) {
   accounts.forEach((account) => {
     account.username = account.owner
@@ -206,7 +186,6 @@ function createUsername(accounts) {
 }
 
 // transfer functionality -------------------------------
-
 function transferMoney(amount, username) {
   inputTransferTo.value = inputTransferAmount.value = '';
 
@@ -227,35 +206,29 @@ function transferMoney(amount, username) {
       date: new Date().toISOString(),
     });
 
-    // add date
-    // currentAccount.movementsDates.push(new Date().toISOString());
-    // recieverAcc.movementsDates.push(new Date().toISOString());
-
     updateUI(currentAccount);
   }
 }
 
 // request loan functionality ------------------
-
 function requestLoan(amount) {
   inputLoanAmount.value = '';
   if (
     amount > 0 &&
     currentAccount.movements.some((movement) => movement.amount >= amount * 0.1)
   ) {
-    //setTimeout(() => {
-    currentAccount.movements.push({ amount: amount, date: new Date().toISOString()});
+    setTimeout(() => {
+      currentAccount.movements.push({
+        amount: amount,
+        date: new Date().toISOString(),
+      });
 
-    // add date
-    // currentAccount.movementsDates.push(new Date().toISOString());
-
-    updateUI(currentAccount);
-    //}, 5000);
+      updateUI(currentAccount);
+    }, 5000);
   }
 }
 
 // close account functionality ------------------
-
 function closeAccount(username, pinNum) {
   inputCloseUsername.value = inputClosePin.value = '';
 
@@ -271,11 +244,7 @@ function closeAccount(username, pinNum) {
   }
 }
 
-// invoke function and set eventListener ----------
-
-// currentAccount = account1;
-// updateUI(currentAccount);
-// containerApp.style.opacity = 1;
+/* invoke function and set eventListener ==================================== */
 
 // create username instead of using owner name
 createUsername(accounts);
@@ -299,7 +268,7 @@ btnLogin.addEventListener('click', (e) => {
     options
   ).format(now);
 
-  btnLogout.style.display = 'block'
+  btnLogout.style.display = 'block';
 
   if (timer) clearInterval(timer);
   timer = startLogoutTimer();
@@ -340,6 +309,6 @@ btnSort.addEventListener('click', () => {
 btnLogout.addEventListener('click', () => {
   containerApp.style.opacity = 0;
   labelWelcome.textContent = 'Login to get started';
-  btnLogout.style.display = 'none'
-  resetTimer()
-})
+  btnLogout.style.display = 'none';
+  resetTimer();
+});
