@@ -78,6 +78,20 @@ nav {
   color: #777;
 }
 
+.logout__btn {
+  font-size: 1.9rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: none;
+}
+.logout__btn:hover {
+  color: #777;
+  border: #777;
+}
+
 /* MAIN */
 .app {
   position: relative;
