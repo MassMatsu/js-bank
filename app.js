@@ -164,6 +164,10 @@ function resetTimer() {
   timer = startLogoutTimer()
 }
 
+function signOut() {
+
+}
+
 // login functionality -----------------
 
 let currentAccount, timer;
@@ -258,6 +262,7 @@ function closeAccount(username, pinNum) {
 
     accounts.splice(index, 1);
     containerApp.style.opacity = 0;
+    labelWelcome.textContent = 'Login to get started';
     console.log(accounts);
   }
 }
